@@ -1,10 +1,13 @@
 # Scott Schumacker
+# app.R file for Tobacco Consumption Dashboard
+
 # Loading libraries
 library(shiny)
 library(shinydashboard)
 library(dplyr)
 library(ggplot2)
 
+# User Interface
 ui <- dashboardPage(
   dashboardHeader(title = "U.S. Tobacco Consumption"),
   dashboardSidebar(),
@@ -15,7 +18,6 @@ ui <- dashboardPage(
       valueBoxOutput("finalConsumed"),
       valueBoxOutput("changeConsumed")
     ),
-    
     # Plot Row
     fluidRow(
       box(plotOutput("populationPlot")),
@@ -24,8 +26,8 @@ ui <- dashboardPage(
   )
 )
 
+# Server
 server <- function(input, output){
-  
   # Loading data
   tobaccoDF <- Adult_Tobacco_Consumption_In_The_U_S_2000_Present
   # Creating subset DF
@@ -44,10 +46,11 @@ server <- function(input, output){
   total2023 <- subset(combustibleDF, Year == "2023", select = c("Total Per Capita"))
   secondTotal <- total2023$`Total Per Capita`
   
-  # Calculating Percent Change
+  # Calculating Percent Change for key metric
   percentChange <- round(((secondTotal - firstTotal)/firstTotal)*100,2)
   percentChange
   
+  # Creating output for total tobacco consumed metric
   output$TotalConsumedBox <- renderValueBox({
     valueBox(
       paste0(round(totalConsumption,2), " T"), "Cigarette Evquivalents Consumed Since 2000", 
@@ -55,18 +58,21 @@ server <- function(input, output){
     )
   })
   
+  # Creating output for tobacco consumed in 2023 per capita metric
   output$finalConsumed <- renderValueBox({
     valueBox(
       paste0(secondTotal), "Cigarette Equivalents Consumed Per Capita in 2023", icon = icon("list")
     )
   })
   
+  # Creating output for tobacco consumption change
   output$changeConsumed <- renderValueBox({
     valueBox(
       paste0(percentChange, "%"), "Tobacco Consumption from 2000 - 2023", icon = icon("list")
     )
   })
   
+  # Creating output for population plot
   output$populationPlot <- renderPlot({
     # Population Chart
     ggplot(combustibleDF, aes(Year, Population)) +
@@ -76,6 +82,7 @@ server <- function(input, output){
       ggtitle("Population")
   })
   
+  # Creating output for tobacco consumption over time
   output$consumptionTime <- renderPlot({
     # Total Tobacco Consumption Per Capita - Cigarette Equivalents
     ggplot(combustibleDF, aes(Year, `Total Per Capita`)) +
