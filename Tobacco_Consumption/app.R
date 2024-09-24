@@ -8,6 +8,22 @@ library(dplyr)
 library(ggplot2)
 library(plotly)
 
+# Creating cards list
+cards <- list(
+  card(
+    plotlyOutput("populationPlot")
+  ),
+  card(
+    plotlyOutput("consumptionTime")
+  ),
+  card(
+    plotlyOutput("changePlot")
+  ),
+  card(
+    plotlyOutput("cigarPlot")
+  )
+)
+
 # User Interface
 ui <- page_sidebar(
   title = "U.S. Tobacco Consumption",
@@ -15,7 +31,11 @@ ui <- page_sidebar(
     title = "Navigation"
   ),
   layout_columns(cards[[1]], cards[[2]]),
-  layout_columns(cards[[3]], cards[[4]])
+  layout_columns(cards[[3]], navset_card_underline(
+    title = "Tobacco Type Comparison",
+    nav_panel("cigar", plotlyOutput("cigarPlot")),
+    nav_panel("Test")
+  ))
 )
 
 # Server
@@ -59,22 +79,6 @@ server <- function(input, output){
   # Creating output for tobacco consumed in 2023 per capita metric
   
   # Creating output for tobacco consumption change
-  
-  # Creating cards list
-  cards <- list(
-    card(
-      plotlyOutput("populationPlot")
-    ),
-    card(
-      plotlyOutput("consumptionTime")
-    ),
-    card(
-      plotlyOutput("changePlot")
-    ),
-    card(
-      plotlyOutput("cigarPlot")
-    )
-  )
   
   # Creating output for population plot
   output$populationPlot <- renderPlotly({
