@@ -35,18 +35,20 @@ server <- function(input, output){
   
   # Creating percent Change and rate of change columns
   combustibleDF2 <- combustibleDF %>% mutate(lagged = lag(`Total Per Capita`))
-  combustibleDF2$percent_change <- ((combustibleDF2$`Total Per Capita` - combustibleDF2$lagged)/combustibleDF2$lagged)*100
+  combustibleDF2$percent_change <- 
+    ((combustibleDF2$`Total Per Capita` - combustibleDF2$lagged)/combustibleDF2$lagged)*100
   combustibleDF2 <- combustibleDF2 %>% mutate(lagged_percent = lag(percent_change))
-  combustibleDF2$rate_change <- combustibleDF2$lagged_percent - combustibleDF2$percent_change
+  combustibleDF2$rate_change <- 
+    combustibleDF2$lagged_percent - combustibleDF2$percent_change
   
   # Creating chewing tobacco subset
-  cigarSubset <- subset(tobaccoDF, Measure %in% c("Cigars") & Submeasure %in% c("Small Cigars", "Large Cigars"))
-  View(cigarSubset)
+  cigarSubset <- 
+    subset(tobaccoDF, Measure %in% c("Cigars") & 
+             Submeasure %in% c("Small Cigars", "Large Cigars"))
   
   # Creating Key Metrics - 7 T cigarette equivalents consumed
   totalConsumption <- sum(combustibleDF$Total)
   totalConsumption <- totalConsumption/1000000000000
-  totalConsumption
   
   # Total Consumed per capita in 2000
   total2000 <- subset(combustibleDF, Year == "2000", select = c("Total Per Capita"))
@@ -63,7 +65,8 @@ server <- function(input, output){
   # Creating output for total tobacco consumed metric
   output$TotalConsumedBox <- renderValueBox({
     valueBox(
-      paste0(round(totalConsumption,2), " T"), "Cigarette Evquivalents Consumed Since 2000", 
+      paste0(round(totalConsumption,2), " T"), 
+      "Cigarette Evquivalents Consumed Since 2000", 
       icon = icon("list")
     )
   })
@@ -71,14 +74,16 @@ server <- function(input, output){
   # Creating output for tobacco consumed in 2023 per capita metric
   output$finalConsumed <- renderValueBox({
     valueBox(
-      paste0(secondTotal), "Cigarette Equivalents Consumed Per Capita in 2023", icon = icon("list")
+      paste0(secondTotal), "Cigarette Equivalents Consumed Per Capita in 2023", 
+      icon = icon("list")
     )
   })
   
   # Creating output for tobacco consumption change
   output$changeConsumed <- renderValueBox({
     valueBox(
-      paste0(percentChange, "%"), "Tobacco Consumption from 2000 - 2023", icon = icon("list")
+      paste0(percentChange, "%"), "Tobacco Consumption from 2000 - 2023", 
+      icon = icon("list")
     )
   })
   
