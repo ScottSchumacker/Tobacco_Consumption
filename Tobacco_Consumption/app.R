@@ -11,19 +11,11 @@ library(plotly)
 # User Interface
 ui <- page_sidebar(
   title = "U.S. Tobacco Consumption",
-  sidebar = sidebar("sidebar"),
-  fluidRow(
-    valueBoxOutput("TotalConsumedBox"),
-    valueBoxOutput("finalConsumed"),
-    valueBoxOutput("changeConsumed")
+  sidebar = sidebar(
+    title = "Navigation"
   ),
-  # Plot Row
-  fluidRow(
-    box(plotlyOutput("populationPlot")),
-    box(plotlyOutput("consumptionTime")),
-    box(plotlyOutput("changePlot")),
-    box(plotlyOutput("cigarPlot"))
-  )
+  layout_columns(cards[[1]], cards[[2]]),
+  layout_columns(cards[[3]], cards[[4]])
 )
 
 # Server
@@ -63,29 +55,26 @@ server <- function(input, output){
   percentChange
   
   # Creating output for total tobacco consumed metric
-  output$TotalConsumedBox <- renderValueBox({
-    valueBox(
-      paste0(round(totalConsumption,2), " T"), 
-      "Cigarette Evquivalents Consumed Since 2000", 
-      icon = icon("list")
-    )
-  })
   
   # Creating output for tobacco consumed in 2023 per capita metric
-  output$finalConsumed <- renderValueBox({
-    valueBox(
-      paste0(secondTotal), "Cigarette Equivalents Consumed Per Capita in 2023", 
-      icon = icon("list")
-    )
-  })
   
   # Creating output for tobacco consumption change
-  output$changeConsumed <- renderValueBox({
-    valueBox(
-      paste0(percentChange, "%"), "Tobacco Consumption from 2000 - 2023", 
-      icon = icon("list")
+  
+  # Creating cards list
+  cards <- list(
+    card(
+      plotlyOutput("populationPlot")
+    ),
+    card(
+      plotlyOutput("consumptionTime")
+    ),
+    card(
+      plotlyOutput("changePlot")
+    ),
+    card(
+      plotlyOutput("cigarPlot")
     )
-  })
+  )
   
   # Creating output for population plot
   output$populationPlot <- renderPlotly({
