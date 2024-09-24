@@ -25,17 +25,36 @@ cards <- list(
 )
 
 # User Interface
-ui <- page_sidebar(
+ui <- page_navbar(
   title = "U.S. Tobacco Consumption",
-  sidebar = sidebar(
-    title = "Navigation"
+  sidebar = NULL,
+  nav_spacer(),
+  nav_panel(
+    title = "Metrics",
+    layout_columns(
+      fill = FALSE,
+      value_box(
+        title = "Total Consumed",
+        value = "7.96 T"
+      ),
+      value_box(
+        title = "Test",
+        value = "Test"
+      ),
+      value_box(
+        title = "Test",
+        value = "Test"
+      )
+    ),
+    layout_columns(cards[[1]], cards[[2]]),
+    layout_columns(cards[[3]], navset_card_underline(
+      title = "Tobacco Submeasure Comparison",
+      nav_panel("cigar", plotlyOutput("cigarPlot")),
+      nav_panel("Test")
+    ))
   ),
-  layout_columns(cards[[1]], cards[[2]]),
-  layout_columns(cards[[3]], navset_card_underline(
-    title = "Tobacco Type Comparison",
-    nav_panel("cigar", plotlyOutput("cigarPlot")),
-    nav_panel("Test")
-  ))
+  nav_panel("Forecasting"),
+  nav_panel("About"),
 )
 
 # Server
@@ -113,7 +132,7 @@ server <- function(input, output){
         geom_line(aes(Year, rate_change), color = "red") +
         theme_bw() +
         ylab("Change (%)") +
-        ggtitle("Consumption Change Over Time") 
+        ggtitle("Combustible Consumption Change Over Time") 
     )
   })
   
