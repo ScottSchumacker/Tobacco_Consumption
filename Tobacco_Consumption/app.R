@@ -3,29 +3,26 @@
 
 # Loading libraries
 library(shiny)
-library(shinydashboard)
+library(bslib)
 library(dplyr)
 library(ggplot2)
 library(plotly)
 
 # User Interface
-ui <- dashboardPage(
-  dashboardHeader(title = "U.S. Tobacco"),
-  dashboardSidebar(),
-  dashboardBody(
-    # KPI Row
-    fluidRow(
-      valueBoxOutput("TotalConsumedBox"),
-      valueBoxOutput("finalConsumed"),
-      valueBoxOutput("changeConsumed")
-    ),
-    # Plot Row
-    fluidRow(
-      box(plotlyOutput("populationPlot")),
-      box(plotlyOutput("consumptionTime")),
-      box(plotlyOutput("changePlot")),
-      box(plotlyOutput("cigarPlot"))
-    )
+ui <- page_sidebar(
+  title = "U.S. Tobacco Consumption",
+  sidebar = sidebar("sidebar"),
+  fluidRow(
+    valueBoxOutput("TotalConsumedBox"),
+    valueBoxOutput("finalConsumed"),
+    valueBoxOutput("changeConsumed")
+  ),
+  # Plot Row
+  fluidRow(
+    box(plotlyOutput("populationPlot")),
+    box(plotlyOutput("consumptionTime")),
+    box(plotlyOutput("changePlot")),
+    box(plotlyOutput("cigarPlot"))
   )
 )
 
