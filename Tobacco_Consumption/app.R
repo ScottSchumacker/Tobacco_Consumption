@@ -17,6 +17,9 @@ cards <- list(
     plotlyOutput("populationPlot")
   ))
 
+link_github <- tags$a(shiny::icon("github"), "Github", 
+href = "https://github.com/ScottSchumacker/Tobacco_Consumption", target = "_blank")
+
 # User Interface
 ui <- page_navbar(
   title = "Tobacco Consumption in the U.S.",
@@ -74,7 +77,7 @@ ui <- page_navbar(
   ),
   nav_menu(
     title = "Links",
-    nav_item("Github")
+    nav_item(link_github)
   )
 )
 
