@@ -7,6 +7,7 @@ library(bslib)
 library(dplyr)
 library(ggplot2)
 library(plotly)
+library(readr)
 
 # Creating cards list
 cards <- list(
@@ -59,8 +60,11 @@ ui <- page_navbar(
 
 # Server
 server <- function(input, output){
+  
   # Loading data
+  Adult_Tobacco_Consumption_In_The_U_S_2000_Present <- read_csv("Adult_Tobacco_Consumption_In_The_U.S.__2000-Present.csv")
   tobaccoDF <- Adult_Tobacco_Consumption_In_The_U_S_2000_Present
+  
   # Creating subset DF
   combustibleDF <- tobaccoDF %>% filter(Submeasure == "Total Combustible Tobacco")
   
