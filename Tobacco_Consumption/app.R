@@ -35,8 +35,8 @@ ui <- page_navbar(
     layout_columns(
       fill = FALSE,
       value_box(
-        title = "Total Consumed",
-        value = "7.96 T"
+        title = "Total Consumed (Cigarette Equivalents)",
+        value = paste0(round(totalConsumption,2), " T")
       ),
       value_box(
         title = "Test",
@@ -47,7 +47,11 @@ ui <- page_navbar(
         value = "Test"
       )
     ),
-    layout_columns(cards[[1]], cards[[2]]),
+    layout_columns(cards[[1]], navset_card_underline(
+      title = "Combustible Tobacco Consumption Per Capita",
+      nav_panel("Consumption", plotlyOutput("consumptionTime")),
+      nav_panel("Forecasting")
+    )),
     layout_columns(navset_card_underline(
       title = "Combustible Consumption Change Over Time",
       nav_panel("Percentage change", plotlyOutput("changePlot")),
@@ -58,7 +62,6 @@ ui <- page_navbar(
       nav_panel("Test")
     ))
   ),
-  nav_panel("Forecasting"),
   nav_panel("About"),
 )
 
@@ -134,8 +137,7 @@ server <- function(input, output){
         geom_point() +
         geom_line() +
         theme_bw() +
-        ylab("Cigarette Equivalents") +
-        ggtitle("Combustible Tobacco Consumption Per Capita")
+        ylab("Cigarette Equivalents")
     )
   })
   
@@ -143,8 +145,8 @@ server <- function(input, output){
   output$changePlot <- renderPlotly({
     ggplotly(
       ggplot(combustibleDF2, aes(Year, percent_change)) +
-        geom_line() +
         geom_point() +
+        geom_smooth() +
         theme_bw() +
         ylab("Change (%)")
     )
@@ -154,8 +156,8 @@ server <- function(input, output){
   output$ratePlot <- renderPlotly({
     ggplotly(
       ggplot(combustibleDF2, aes(Year, rate_change)) +
-        geom_line(color = "red") +
         geom_point(color = "red") +
+        geom_smooth() +
         theme_bw() +
         ylab("Change (%)")
     )
