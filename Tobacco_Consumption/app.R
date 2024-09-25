@@ -7,6 +7,7 @@ library(bslib)
 library(dplyr)
 library(ggplot2)
 library(plotly)
+library(readr)
 
 # Creating cards list
 cards <- list(
@@ -47,7 +48,11 @@ ui <- page_navbar(
       )
     ),
     layout_columns(cards[[1]], cards[[2]]),
-    layout_columns(cards[[3]], navset_card_underline(
+    layout_columns(navset_card_underline(
+      title = "Combustible Consumption Change Over Time",
+      nav_panel("Percentage change", plotlyOutput("changePlot")),
+      nav_panel("Rate of change", plotlyOutput("ratePlot"))
+    ), navset_card_underline(
       title = "Tobacco Submeasure Comparison",
       nav_panel("cigar", plotlyOutput("cigarPlot")),
       nav_panel("Test")
@@ -59,8 +64,18 @@ ui <- page_navbar(
 
 # Server
 server <- function(input, output){
+  
+  # Creating modal welcome popup
+  showModal(modalDialog(
+    title = "Welcome to the U.S. Tobacco Consumption Dashboard!",
+    paste0("This dashboard is to help you explore tobacco consumption data in the U.S.",
+    "Disclaimer: This dashboard is for informal exploratory purposes only.")))
+  
+  # Data Load and Transformation
   # Loading data
+  Adult_Tobacco_Consumption_In_The_U_S_2000_Present <- read_csv("Adult_Tobacco_Consumption_In_The_U.S.__2000-Present.csv")
   tobaccoDF <- Adult_Tobacco_Consumption_In_The_U_S_2000_Present
+  
   # Creating subset DF
   combustibleDF <- tobaccoDF %>% filter(Submeasure == "Total Combustible Tobacco")
   
@@ -106,10 +121,12 @@ server <- function(input, output){
         geom_point() +
         geom_line() +
         theme_bw() +
+        ylab("") +
         ggtitle("Population")
     )
   })
   
+  # Creating plot outputs
   # Creating output for tobacco consumption over time
   output$consumptionTime <- renderPlotly({
     ggplotly(
@@ -117,8 +134,8 @@ server <- function(input, output){
         geom_point() +
         geom_line() +
         theme_bw() +
-        ylab("Consumption Per Capita (Cigarette Equivalents)") +
-        ggtitle("Combustible Tobacco Consumption Over Time")
+        ylab("Cigarette Equivalents") +
+        ggtitle("Combustible Tobacco Consumption Per Capita")
     )
   })
   
@@ -126,13 +143,21 @@ server <- function(input, output){
   output$changePlot <- renderPlotly({
     ggplotly(
       ggplot(combustibleDF2, aes(Year, percent_change)) +
-        geom_point() +
-        geom_point(aes(Year, rate_change), color = "red") +
         geom_line() +
-        geom_line(aes(Year, rate_change), color = "red") +
+        geom_point() +
         theme_bw() +
-        ylab("Change (%)") +
-        ggtitle("Combustible Consumption Change Over Time") 
+        ylab("Change (%)")
+    )
+  })
+  
+  # Rate of change plot
+  output$ratePlot <- renderPlotly({
+    ggplotly(
+      ggplot(combustibleDF2, aes(Year, rate_change)) +
+        geom_line(color = "red") +
+        geom_point(color = "red") +
+        theme_bw() +
+        ylab("Change (%)")
     )
   })
   
@@ -140,7 +165,8 @@ server <- function(input, output){
   output$cigarPlot <- renderPlotly({
     ggplotly(
       ggplot(cigarSubset, aes(Year, `Total Per Capita`, fill = Submeasure)) +
-        geom_bar(stat = "identity")
+        geom_bar(stat = "identity") +
+        ylab("Total Consumption Per Capita")
     )
   })
   
