@@ -13,21 +13,11 @@ library(readr)
 cards <- list(
   card(
     plotlyOutput("populationPlot")
-  ),
-  card(
-    plotlyOutput("consumptionTime")
-  ),
-  card(
-    plotlyOutput("changePlot")
-  ),
-  card(
-    plotlyOutput("cigarPlot")
-  )
-)
+  ))
 
 # User Interface
 ui <- page_navbar(
-  title = "U.S. Tobacco Consumption",
+  title = "Tobacco Consumption in the U.S.",
   sidebar = NULL,
   nav_spacer(),
   nav_panel(
@@ -35,7 +25,7 @@ ui <- page_navbar(
     layout_columns(
       fill = FALSE,
       value_box(
-        title = "Total Consumed 2000-2023 (Cigarette Equivalents)",
+        title = "Total Consumption 2000-2023 (Cigarette Equivalents)",
         value = textOutput("total")
       ),
       value_box(
@@ -50,7 +40,7 @@ ui <- page_navbar(
     layout_columns(cards[[1]], navset_card_underline(
       title = "Combustible Tobacco Consumption Per Capita",
       nav_panel("Consumption", plotlyOutput("consumptionTime")),
-      nav_panel("Linear Regression Forecasting", plotlyOutput("forecastPlot"))
+      nav_panel("Linear Regression Forecast", plotlyOutput("forecastPlot"))
     )),
     layout_columns(navset_card_underline(
       title = "Combustible Consumption Change Over Time",
@@ -58,7 +48,9 @@ ui <- page_navbar(
       nav_panel("Rate of change", plotlyOutput("ratePlot"))
     ), navset_card_underline(
       title = "Tobacco Submeasure Comparison",
-      nav_panel("Cigars", plotlyOutput("cigarPlot"))
+      nav_panel("Cigars", plotlyOutput("cigarPlot")),
+      nav_panel("Cigarettes", plotlyOutput("cigarettePlot")),
+      nav_panel("Others", plotlyOutput("otherPlot"))
     ))
   ),
   nav_panel("About"),
@@ -69,7 +61,7 @@ server <- function(input, output){
   
   # Creating modal welcome popup
   showModal(modalDialog(
-    title = "Welcome to the U.S. Tobacco Consumption Dashboard!",
+    title = "Welcome to the Tobacco Consumption Dashboard!",
     paste0("This dashboard is to help you explore U.S. tobacco consumption data. ",
     "Disclaimer: This dashboard is for informal exploratory purposes only.")))
   
@@ -93,6 +85,12 @@ server <- function(input, output){
   cigarSubset <- 
     subset(tobaccoDF, Measure %in% c("Cigars") & 
              Submeasure %in% c("Small Cigars", "Large Cigars"))
+  
+  newSubsetDF <- subset(tobaccoDF, Measure %in% c("Loose Tobacco", "Smokeless Tobacco") &
+                          Submeasure %in% c("Chewing Tobacco", "Pipe Tobacco", "Roll-Your-Own Tobacco") &
+                          `Data Value Unit` %in% c("Pounds"))
+  
+  cigaretteDF <- subset(tobaccoDF, Submeasure %in% c("Cigarette Removals"))
   
   # Creating Key Metrics - 7 T cigarette equivalents consumed
   totalConsumption <- sum(combustibleDF$Total)
@@ -156,7 +154,7 @@ server <- function(input, output){
   colnames(futureYearDF) <- c("Year", "Total Per Capita")
   predictionDF <- subset(combustibleDF, select = c("Year", "Total Per Capita"))
   predictionDF <- rbind(predictionDF, futureYearDF)
-  predictionDF$predicted_values <- predict(tobaccoModel, predictionDF)
+  predictionDF$predicted_value <- predict(tobaccoModel, predictionDF)
   
   output$forecastPlot <- renderPlotly({
     ggplotly(
@@ -164,7 +162,7 @@ server <- function(input, output){
         geom_point() +
         geom_line(alpha = 0.2) +
         geom_smooth(method = "lm") +
-        geom_point(aes(Year, predicted_values), color = "red", alpha = 0.3) +
+        geom_point(aes(Year, predicted_value), color = "red", alpha = 0.3) +
         theme_bw() +
         ylab("Cigarette Equivalents")
     )
@@ -203,6 +201,23 @@ server <- function(input, output){
     )
   })
   
+  # Cigarette plot
+  output$cigarettePlot <- renderPlotly({
+    ggplotly(
+      ggplot(cigaretteDF, aes(Year, `Total Per Capita`, fill = Submeasure)) +
+        geom_bar(stat = "identity") +
+        ylab("Total Consumption Per Capita")
+    )
+  })
+  
+  # Other plot
+  output$otherPlot <- renderPlotly({
+    ggplotly(
+      ggplot(newSubsetDF, aes(Year, `Total Per Capita`, fill = Submeasure)) +
+        geom_bar(stat = "identity") +
+        ylab("Total Consumption Per Capita")
+    )
+  })
 }
 
 shinyApp(ui, server)
