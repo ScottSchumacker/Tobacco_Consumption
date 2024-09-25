@@ -35,16 +35,16 @@ ui <- page_navbar(
     layout_columns(
       fill = FALSE,
       value_box(
-        title = "Total Consumed (Cigarette Equivalents)",
-        value = paste0(round(totalConsumption,2), " T")
+        title = "Total Consumed 2000-2023 (Cigarette Equivalents)",
+        value = textOutput("total")
       ),
       value_box(
-        title = "Test",
-        value = "Test"
+        title = "2023 Consumption Per Capita (Cigarette Equivalents)",
+        value = textOutput("consume2023")
       ),
       value_box(
-        title = "Test",
-        value = "Test"
+        title = "Change in Consumption 2000-2023",
+        value = textOutput("change")
       )
     ),
     layout_columns(cards[[1]], navset_card_underline(
@@ -99,6 +99,10 @@ server <- function(input, output){
   totalConsumption <- sum(combustibleDF$Total)
   totalConsumption <- totalConsumption/1000000000000
   
+  output$total <- renderText({
+    paste0(round(totalConsumption,2), " T")
+  })
+  
   # Total Consumed per capita in 2000
   total2000 <- subset(combustibleDF, Year == "2000", select = c("Total Per Capita"))
   firstTotal <- total2000$`Total Per Capita`
@@ -107,15 +111,17 @@ server <- function(input, output){
   total2023 <- subset(combustibleDF, Year == "2023", select = c("Total Per Capita"))
   secondTotal <- total2023$`Total Per Capita`
   
+  output$consume2023 <- renderText({
+    secondTotal
+  })
+  
   # Calculating Percent Change for key metric
   percentChange <- round(((secondTotal - firstTotal)/firstTotal)*100,2)
   percentChange
   
-  # Creating output for total tobacco consumed metric
-  
-  # Creating output for tobacco consumed in 2023 per capita metric
-  
-  # Creating output for tobacco consumption change
+  output$change <- renderText({
+    paste0(round(percentChange,2), "%")
+  })
   
   # Creating output for population plot
   output$populationPlot <- renderPlotly({
