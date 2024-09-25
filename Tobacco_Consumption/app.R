@@ -1,15 +1,17 @@
 # Scott Schumacker
 # app.R file for Tobacco Consumption Dashboard
+# This shiny dashboard is utilizing bootstrap
 
 # Loading libraries
 library(shiny)
 library(bslib)
+library(bsicons)
 library(dplyr)
 library(ggplot2)
 library(plotly)
 library(readr)
 
-# Creating cards list
+# Creating cards list for UI
 cards <- list(
   card(
     plotlyOutput("populationPlot")
@@ -26,7 +28,8 @@ ui <- page_navbar(
       fill = FALSE,
       value_box(
         title = "Total Consumption 2000-2023 (Cigarette Equivalents)",
-        value = textOutput("total")
+        value = textOutput("total"),
+        showcase = bs_icon("fire")
       ),
       value_box(
         title = "2023 Consumption Per Capita (Cigarette Equivalents)",
@@ -53,7 +56,26 @@ ui <- page_navbar(
       nav_panel("Others", plotlyOutput("otherPlot"))
     ))
   ),
-  nav_panel("About"),
+  nav_panel(
+    "About",
+    card(
+      h1("Tobacco Consumption Dashboard"),
+      p("Welcome to the Tobacco Consumption Dashboard. This dashboard allows users
+      to informally explore tobacco consumption in the united states."),
+      p("Creator and Maintainer: Scott Schumacker"),
+      p("Data last updated: July 2023"),
+      p("Data Set: Adult Tobacco Consumption In The U.S., 2000-Present"),
+      p("Data Source: Data.gov"),
+      p("Data License:"),
+      a(href = "https://opendatacommons.org/licenses/by/1-0/", "license"),
+      p("Disclaimer: This dashboard is for informal exploratory purposes only. 
+        This dashboard is not meant to be used for formal conclusions, publications, or formal research.")
+    )
+  ),
+  nav_menu(
+    title = "Links",
+    nav_item("Github")
+  )
 )
 
 # Server
