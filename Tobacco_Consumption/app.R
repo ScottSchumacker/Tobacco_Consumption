@@ -65,6 +65,12 @@ ui <- page_navbar(
 # Server
 server <- function(input, output){
   
+  # Creating modal welcome popup
+  showModal(modalDialog(
+    title = "Welcome to the U.S. Tobacco Consumption Dashboard!",
+    paste0("This dashboard is to help you explore tobacco consumption data in the U.S.",
+    "Disclaimer: This dashboard is for informal exploratory purposes only.")))
+  
   # Data Load and Transformation
   # Loading data
   Adult_Tobacco_Consumption_In_The_U_S_2000_Present <- read_csv("Adult_Tobacco_Consumption_In_The_U.S.__2000-Present.csv")
