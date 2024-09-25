@@ -10,6 +10,7 @@ library(dplyr)
 library(ggplot2)
 library(plotly)
 library(readr)
+library(viridis)
 
 # Creating cards list for UI
 cards <- list(
@@ -22,6 +23,7 @@ href = "https://github.com/ScottSchumacker/Tobacco_Consumption", target = "_blan
 
 # User Interface
 ui <- page_navbar(
+  theme = bs_theme(bootswatch = "flatly"),
   title = "Tobacco Consumption in the U.S.",
   sidebar = NULL,
   nav_spacer(),
@@ -77,7 +79,7 @@ ui <- page_navbar(
   ),
   nav_menu(
     title = "Links",
-    nav_item(link_github)
+    nav_item(link_github), align = "right"
   )
 )
 
@@ -197,7 +199,7 @@ server <- function(input, output){
   output$changePlot <- renderPlotly({
     ggplotly(
       ggplot(combustibleDF2, aes(Year, percent_change)) +
-        geom_point() +
+        geom_point(size = 3, alpha = 0.6) +
         geom_line(alpha = 0.2) + 
         geom_smooth(method = "lm", se = FALSE) +
         theme_bw() +
@@ -209,7 +211,7 @@ server <- function(input, output){
   output$ratePlot <- renderPlotly({
     ggplotly(
       ggplot(combustibleDF2, aes(Year, rate_change)) +
-        geom_point(color = "red") +
+        geom_point(color = "#18BC9C", size = 3, alpha = 0.6) +
         geom_line(alpha = 0.2) + 
         geom_smooth(method = "lm", se = FALSE) +
         theme_bw() +
@@ -217,11 +219,15 @@ server <- function(input, output){
     )
   })
   
+  myColors <- c("#18BC9C", "#22577A", "#F7A072")
+  
   # Cigar plot
   output$cigarPlot <- renderPlotly({
     ggplotly(
       ggplot(cigarSubset, aes(Year, `Total Per Capita`, fill = Submeasure)) +
         geom_bar(stat = "identity") +
+        scale_fill_manual(values = myColors) +
+        theme_bw() + 
         ylab("Total Consumption Per Capita")
     )
   })
@@ -231,6 +237,8 @@ server <- function(input, output){
     ggplotly(
       ggplot(cigaretteDF, aes(Year, `Total Per Capita`, fill = Submeasure)) +
         geom_bar(stat = "identity") +
+        scale_fill_manual(values = myColors) +
+        theme_bw() +
         ylab("Total Consumption Per Capita")
     )
   })
@@ -240,6 +248,8 @@ server <- function(input, output){
     ggplotly(
       ggplot(newSubsetDF, aes(Year, `Total Per Capita`, fill = Submeasure)) +
         geom_bar(stat = "identity") +
+        scale_fill_manual(values = myColors) +
+        theme_bw() +
         ylab("Total Consumption Per Capita")
     )
   })
