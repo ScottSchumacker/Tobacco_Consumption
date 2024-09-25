@@ -65,6 +65,7 @@ ui <- page_navbar(
 # Server
 server <- function(input, output){
   
+  # Data Load and Transformation
   # Loading data
   Adult_Tobacco_Consumption_In_The_U_S_2000_Present <- read_csv("Adult_Tobacco_Consumption_In_The_U.S.__2000-Present.csv")
   tobaccoDF <- Adult_Tobacco_Consumption_In_The_U_S_2000_Present
@@ -114,10 +115,12 @@ server <- function(input, output){
         geom_point() +
         geom_line() +
         theme_bw() +
+        ylab("") +
         ggtitle("Population")
     )
   })
   
+  # Creating plot outputs
   # Creating output for tobacco consumption over time
   output$consumptionTime <- renderPlotly({
     ggplotly(
@@ -125,8 +128,8 @@ server <- function(input, output){
         geom_point() +
         geom_line() +
         theme_bw() +
-        ylab("Consumption Per Capita (Cigarette Equivalents)") +
-        ggtitle("Combustible Tobacco Consumption Over Time")
+        ylab("Cigarette Equivalents") +
+        ggtitle("Combustible Tobacco Consumption Per Capita")
     )
   })
   
@@ -156,7 +159,8 @@ server <- function(input, output){
   output$cigarPlot <- renderPlotly({
     ggplotly(
       ggplot(cigarSubset, aes(Year, `Total Per Capita`, fill = Submeasure)) +
-        geom_bar(stat = "identity")
+        geom_bar(stat = "identity") +
+        ylab("Total Consumption Per Capita")
     )
   })
   
