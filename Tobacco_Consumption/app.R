@@ -1,6 +1,7 @@
 # Scott Schumacker
 # app.R file for Tobacco Consumption Dashboard
-# This shiny dashboard is utilizing bootstrap
+# This shiny dashboard is utilizing the bootstrap framework
+# Dashboard v1.0.0
 
 # Loading libraries
 library(shiny)
@@ -25,7 +26,7 @@ target = "_blank")
 
 # User Interface
 ui <- page_navbar(
-  theme = bs_theme(bootswatch = "minty"),
+  theme = bs_theme(version = 5, bootswatch = "minty"),
   title = "Tobacco Consumption in the U.S.",
   sidebar = NULL,
   nav_spacer(),
