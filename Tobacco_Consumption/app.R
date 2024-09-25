@@ -68,6 +68,7 @@ ui <- page_navbar(
       p("Welcome to the Tobacco Consumption Dashboard. This dashboard allows users
       to informally explore tobacco consumption in the united states."),
       p("Creator and Maintainer: Scott Schumacker"),
+      p("Dashboard version: 1.0.0"),
       p("Data last updated: July 2023"),
       p("Data Set: Adult Tobacco Consumption In The U.S., 2000-Present"),
       p("Data Source: Data.gov"),
