@@ -50,7 +50,7 @@ ui <- page_navbar(
     layout_columns(cards[[1]], navset_card_underline(
       title = "Combustible Tobacco Consumption Per Capita",
       nav_panel("Consumption", plotlyOutput("consumptionTime")),
-      nav_panel("Forecasting")
+      nav_panel("Linear Regression Forecasting", plotlyOutput("forecastPlot"))
     )),
     layout_columns(navset_card_underline(
       title = "Combustible Consumption Change Over Time",
@@ -58,8 +58,7 @@ ui <- page_navbar(
       nav_panel("Rate of change", plotlyOutput("ratePlot"))
     ), navset_card_underline(
       title = "Tobacco Submeasure Comparison",
-      nav_panel("cigar", plotlyOutput("cigarPlot")),
-      nav_panel("Test")
+      nav_panel("Cigars", plotlyOutput("cigarPlot"))
     ))
   ),
   nav_panel("About"),
@@ -71,7 +70,7 @@ server <- function(input, output){
   # Creating modal welcome popup
   showModal(modalDialog(
     title = "Welcome to the U.S. Tobacco Consumption Dashboard!",
-    paste0("This dashboard is to help you explore tobacco consumption data in the U.S.",
+    paste0("This dashboard is to help you explore U.S. tobacco consumption data. ",
     "Disclaimer: This dashboard is for informal exploratory purposes only.")))
   
   # Data Load and Transformation
@@ -147,12 +146,37 @@ server <- function(input, output){
     )
   })
   
+  # Creating linear regression forecast model
+  tobaccoModel <- lm(`Total Per Capita` ~ Year, data = combustibleDF)
+  tobaccoModel
+  
+  Year <- c(2024,2025,2026,2027,2028,2029,2030,2031,2032,2033)
+  `Total Per Capita` <- NA
+  futureYearDF <- data.frame(Year, `Total Per Capita`)
+  colnames(futureYearDF) <- c("Year", "Total Per Capita")
+  predictionDF <- subset(combustibleDF, select = c("Year", "Total Per Capita"))
+  predictionDF <- rbind(predictionDF, futureYearDF)
+  predictionDF$predicted_values <- predict(tobaccoModel, predictionDF)
+  
+  output$forecastPlot <- renderPlotly({
+    ggplotly(
+      ggplot(predictionDF, aes(Year, `Total Per Capita`)) +
+        geom_point() +
+        geom_line(alpha = 0.2) +
+        geom_smooth(method = "lm") +
+        geom_point(aes(Year, predicted_values), color = "red", alpha = 0.3) +
+        theme_bw() +
+        ylab("Cigarette Equivalents")
+    )
+  })
+  
   # Creating output for tobacco consumption over time
   output$changePlot <- renderPlotly({
     ggplotly(
       ggplot(combustibleDF2, aes(Year, percent_change)) +
         geom_point() +
-        geom_smooth() +
+        geom_line(alpha = 0.2) + 
+        geom_smooth(method = "lm", se = FALSE) +
         theme_bw() +
         ylab("Change (%)")
     )
@@ -163,7 +187,8 @@ server <- function(input, output){
     ggplotly(
       ggplot(combustibleDF2, aes(Year, rate_change)) +
         geom_point(color = "red") +
-        geom_smooth() +
+        geom_line(alpha = 0.2) + 
+        geom_smooth(method = "lm", se = FALSE) +
         theme_bw() +
         ylab("Change (%)")
     )
