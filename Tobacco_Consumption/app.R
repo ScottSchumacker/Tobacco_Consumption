@@ -26,7 +26,10 @@ target = "_blank")
 
 # User Interface
 ui <- page_navbar(
-  theme = bs_theme(version = 5, bootswatch = "minty"),
+  theme = bs_theme(
+    version = 5,
+    bootswatch = "minty"
+  ),
   title = "Tobacco Consumption in the U.S.",
   sidebar = NULL,
   nav_spacer(),
