@@ -1,7 +1,7 @@
 # Scott Schumacker
 # app.R file for Tobacco Consumption Dashboard
 # This shiny dashboard is utilizing the bootstrap framework
-# Dashboard v1.0.0
+# Dashboard v1.2.0
 
 # Loading libraries
 library(shiny)
@@ -11,7 +11,6 @@ library(dplyr)
 library(ggplot2)
 library(plotly)
 library(readr)
-library(viridis)
 
 # Creating cards list for UI
 cards <- list(
@@ -113,46 +112,35 @@ server <- function(input, output){
   Adult_Tobacco_Consumption_In_The_U_S_2000_Present <- read_csv("Adult_Tobacco_Consumption_In_The_U.S.__2000-Present.csv")
   tobacco_DF <- Adult_Tobacco_Consumption_In_The_U_S_2000_Present
   
-  # Creating subset DF
-  combustible_DF <- tobacco_DF %>% filter(Submeasure == "Total Combustible Tobacco")
-  
   # Creating percent Change and rate of change columns
-  combustible_DF2 <- combustible_DF %>% mutate(lagged = lag(`Total Per Capita`))
+  combustible_DF2 <- tobacco_DF %>% 
+    filter(Submeasure == "Total Combustible Tobacco") %>% 
+    mutate(lagged = lag(`Total Per Capita`))
   combustible_DF2$percent_change <- 
     ((combustible_DF2$`Total Per Capita` - combustible_DF2$lagged)/combustible_DF2$lagged)*100
   combustible_DF2 <- combustible_DF2 %>% mutate(lagged_percent = lag(percent_change))
   combustible_DF2$rate_change <- 
     combustible_DF2$lagged_percent - combustible_DF2$percent_change
   
-  # Creating new subset for plots
-  cigarSubset <- 
-    subset(tobacco_DF, Measure %in% c("Cigars") & 
-             Submeasure %in% c("Small Cigars", "Large Cigars"))
-  
-  new_subset_DF <- subset(tobacco_DF, Measure %in% c("Loose Tobacco", 
-                                                  "Smokeless Tobacco") &
-                          Submeasure %in% c("Chewing Tobacco", "Pipe Tobacco", 
-                                            "Roll-Your-Own Tobacco") &
-                          `Data Value Unit` %in% c("Pounds"))
-  
-  cigarette_DF <- subset(tobacco_DF, Submeasure %in% c("Cigarette Removals"))
-  
   # Creating Key Metrics - 7 T cigarette equivalents consumed
-  total_consumption <- sum(combustible_DF$Total)
-  total_consumption <- total_consumption/1000000000000
+  total_consumption <- tobacco_DF %>% 
+    filter(Submeasure == "Total Combustible Tobacco") %>% 
+    summarise(sum = sum(Total)/1000000000000)
   
   output$total <- renderText({
     paste0(round(total_consumption,2), " T")
   })
   
   # Total Consumed per capita in 2000
-  total2000 <- subset(combustible_DF, Year == "2000", 
-                      select = c("Total Per Capita"))
+  total2000 <- tobacco_DF %>% 
+    filter(Submeasure == "Total Combustible Tobacco", Year == "2000") %>% 
+    select("Total Per Capita")
   first_total <- total2000$`Total Per Capita`
   
   # Total Consumed per capita in 2023
-  total2023 <- subset(combustible_DF, Year == "2023", 
-                      select = c("Total Per Capita"))
+  total2023 <- tobacco_DF %>% 
+    filter(Submeasure == "Total Combustible Tobacco", Year == "2023") %>%
+    select("Total Per Capita")
   second_total <- total2023$`Total Per Capita`
   
   # Creating KPI output for 2023 consumed per capita
@@ -160,19 +148,17 @@ server <- function(input, output){
     second_total
   })
   
-  # Calculating Percent Change for key metric
-  percent_change <- round(((second_total - first_total)/first_total)*100,2)
-  percent_change
-  
   # Creating KPI output for percent change from 2000-2023
   output$change <- renderText({
-    paste0(round(percent_change,2), "%")
+    paste0(round(round(((second_total - first_total)/first_total)*100,2),2), "%")
   })
   
   # Creating output for population plot
   output$populationPlot <- renderPlotly({
     ggplotly(
-      ggplot(combustible_DF, aes(Year, Population)) +
+      tobacco_DF %>% 
+        filter(Submeasure == "Total Combustible Tobacco") %>% 
+        ggplot(aes(Year, Population)) +
         geom_point() +
         geom_line() +
         theme_bw() +
@@ -185,7 +171,9 @@ server <- function(input, output){
   # Creating output for tobacco consumption over time
   output$consumptionTime <- renderPlotly({
     ggplotly(
-      ggplot(combustible_DF, aes(Year, `Total Per Capita`)) +
+      tobacco_DF %>% 
+        filter(Submeasure == "Total Combustible Tobacco") %>% 
+        ggplot(aes(Year, `Total Per Capita`)) +
         geom_point() +
         geom_line() +
         theme_bw() +
@@ -194,7 +182,9 @@ server <- function(input, output){
   })
   
   # Creating linear regression forecast model
-  tobacco_model <- lm(`Total Per Capita` ~ Year, data = combustible_DF)
+  tobacco_model <- tobacco_DF %>% 
+    filter(Submeasure == "Total Combustible Tobacco") %>% 
+    lm(`Total Per Capita` ~ Year, data = .)
   tobacco_model
   
   # Creating prediction data frame to use for added predicted values to plot
@@ -202,7 +192,9 @@ server <- function(input, output){
   `Total Per Capita` <- NA
   futureYearDF <- data.frame(Year, `Total Per Capita`)
   colnames(futureYearDF) <- c("Year", "Total Per Capita")
-  prediction_DF <- subset(combustible_DF, select = c("Year", "Total Per Capita"))
+  prediction_DF <- tobacco_DF %>% 
+    filter(Submeasure == "Total Combustible Tobacco") %>% 
+    select("Year", "Total Per Capita")
   prediction_DF <- rbind(prediction_DF, futureYearDF)
   prediction_DF$predicted_value <- predict(tobacco_model, prediction_DF)
   
@@ -249,7 +241,9 @@ server <- function(input, output){
   # Cigar plot
   output$cigarPlot <- renderPlotly({
     ggplotly(
-      ggplot(cigarSubset, aes(Year, `Total Per Capita`, fill = Submeasure)) +
+      tobacco_DF %>% 
+        filter(Measure == "Cigars" & Submeasure %in% c("Small Cigars", "Large Cigars")) %>% 
+        ggplot(aes(Year, `Total Per Capita`, fill = Submeasure)) +
         geom_bar(stat = "identity") +
         scale_fill_manual(values = my_colors) +
         theme_bw() +
@@ -260,7 +254,9 @@ server <- function(input, output){
   # Cigarette plot
   output$cigarettePlot <- renderPlotly({
     ggplotly(
-      ggplot(cigarette_DF, aes(Year, `Total Per Capita`, fill = Submeasure)) +
+      tobacco_DF %>% 
+        filter(Submeasure == "Cigarette Removals") %>% 
+        ggplot(aes(Year, `Total Per Capita`, fill = Submeasure)) +
         geom_bar(stat = "identity") +
         scale_fill_manual(values = my_colors) +
         theme_bw() +
@@ -271,7 +267,12 @@ server <- function(input, output){
   # Other plot
   output$otherPlot <- renderPlotly({
     ggplotly(
-      ggplot(new_subset_DF, aes(Year, `Total Per Capita`, fill = Submeasure)) +
+      tobacco_DF %>% 
+        filter(Measure %in% c("Loose Tobacco", "Smokeless Tobacco") &
+                 Submeasure %in% c("Chewing Tobacco", "Pipe Tobacco",
+                                   "Roll-Your-Own Tobacco") &
+                 `Data Value Unit` %in% c("Pounds")) %>% 
+        ggplot(aes(Year, `Total Per Capita`, fill = Submeasure)) +
         geom_bar(stat = "identity") +
         scale_fill_manual(values = my_colors) +
         theme_bw() +
